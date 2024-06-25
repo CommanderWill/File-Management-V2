@@ -18,9 +18,15 @@
     <ClCompile Include="file_management.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\vs projects\file_management_v2\File Management V2\File Management V2\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file_management.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\vs projects\file_management_v2\File Management V2\File Management V2\fileManagementV2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
