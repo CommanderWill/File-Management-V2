@@ -80,11 +80,11 @@ int main() {
 	bool appActive = true;
 
 	fm.DeleteFile(true, "fillLine2.txt");
-	fm.Create(fm.File, true, "fillLine2.txt");
-	fm.Write(fm.File, true, "fillLine2.txt", "Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
+	fm.Create(FILEMANAGEMENT::File, true, "fillLine2.txt");
+	fm.Write(FILEMANAGEMENT::File, true, "fillLine2.txt", "Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
 
-	while (appActive == true) {
-		//Write line 2 on existing 
+	while (appActive) {
+		//Write line 2 on existing
 		std::cout << "Read existing file:\n";
 		fm.Read(true, "fillLine2.txt");
 
@@ -104,7 +104,6 @@ int main() {
 
 		std::cout << "Select An Option:\n1. Repeat\n0. End\n";
 		std::cin >> appActive;
-		appActive;
 	}
 	
 

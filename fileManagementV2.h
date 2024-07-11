@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <utility>
 
 //--------------------------------------------------!!IMPORTANT!!-----------------------------------------------------------
 //
@@ -28,27 +29,23 @@ class FILEMANAGEMENT {
 protected:
 	//General Vars
 	std::string appDirectory = std::filesystem::current_path().string();
-	std::string targetDirectory;
-	std::string targetName;
-	std::string targetPath;
-	std::string copyPath;
+	std::string secondaryPath;
 	
 	//Read/Write Vars
-	std::string EMPTY = "";
+	std::string EMPTY;
 	std::string contents;
-	int totalLines;
-	int currentLine;
-	int endLine;
+	int totalLines{};
+	int currentLine{};
+	int endLine{};
 	std::fstream file;
 	std::ofstream temp;
 	std::ostringstream buffer;
 	std::string sbuffer;
 
 	//functions that provide common operations but arnt needed outside of the class
-	std::string pathBuilder(std::string directory, std::string name) {
+	static std::string pathBuilder(std::string directory, std::string name) {
 		return directory + "\\" + name;
 	}
-	
 
 public: 
 	//Identifiers for use as inputs for public functions
@@ -56,145 +53,130 @@ public:
 	//---------------------Directory/File Operations---------------------
 	//Tested Working 3/30/24
 	//--------------------------------------------------------------------------------
-	void Create(itemType itemType, bool currentDirectory, std::string directory, std::string name) { 
+	void Create(const itemType itemType, const bool currentDirectory, std::string directory, std::string name) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, pathBuilder(directory, name));
+			directory = pathBuilder(appDirectory, pathBuilder(directory, name));
 		}
 		else {
-			targetPath = pathBuilder(directory, name);
+			directory = pathBuilder(directory, name);
 		}
 		if (itemType == Directory) {
-			std::filesystem::create_directory(targetPath);
+			std::filesystem::create_directory(directory);
 		}
 		else if (itemType == File) {
-			std::ofstream newFile(targetPath);
+			std::ofstream newFile(directory);
 			newFile.close(); // ofstream opens files after creation, therefor it must be closed to clean up memory
 		}
 		//In the future no-solution errorhandling goes here
-		return;
 	}
-	void Create(itemType itemType, bool currentDirectory, std::string path) {
+	void Create(const itemType itemType, const bool currentDirectory, std::string path) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
-		}
-		else {
-			targetPath = path;
+			path = pathBuilder(appDirectory, path);
 		}
 		if (itemType == Directory) {
-			std::filesystem::create_directory(targetPath);
+			std::filesystem::create_directory(path);
 		}
 		else if (itemType == File) {
-			std::ofstream newFile(targetPath);
+			std::ofstream newFile(path);
 			newFile.close(); // ofstream opens files after creation, therefor it must be closed to clean up memory
 		}
 		//In the future no-solution errorhandling goes here
-		return;
 	}
-	void DeleteDirectory(bool currentDirectory, std::string directory, bool deleteIfNotEmpty) {
+	void DeleteDirectory(const bool currentDirectory, std::string directory, const bool deleteIfNotEmpty) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, directory);
-		}
-		else {
-			targetPath = directory;
+			directory = pathBuilder(appDirectory, directory);
 		}
 		std::cout << "Path Selected\n" << std::endl;
-		std::cout << "Target Path: " << targetPath << std::endl;
-		if (exists(targetPath)) {
+		std::cout << "Target Path: " << directory << std::endl;
+		if (exists(directory)) {
 			if (deleteIfNotEmpty) {
 				std::cout << "File Exists State 1\n" << std::endl;
-				std::filesystem::remove_all(targetPath); //Delete directory & anything in it
+				std::filesystem::remove_all(directory); //Delete directory & anything in it
 			}
 			else {
 				std::cout << "File Exists State 2\n" << std::endl;
-				std::filesystem::remove(targetPath); //Deletes only an empty directory
+				std::filesystem::remove(directory); //Deletes only an empty directory
 			}
 			std::cout << "Success\n" << std::endl;
 		}
 		else {
 			std::cout << "Directory Doesnt Exists\n" << std::endl;
 		}
-		
-		return;
 	}
-	void DeleteFile(bool currentDirectory, std::string directory, std::string name) {
+	void DeleteFile(const bool currentDirectory, std::string directory, std::string name) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, pathBuilder(directory, name));
+			directory = pathBuilder(appDirectory, pathBuilder(directory, name));
 		}
 		else {
-			targetPath = pathBuilder(directory, name);
+			directory = pathBuilder(directory, name);
 		}
-		if (exists(targetPath)) {
+		if (exists(directory)) {
 			std::cout << "File Exists\n" << std::endl;
-			std::filesystem::remove(targetPath);
+			std::filesystem::remove(directory);
 			std::cout << "Success\n" << std::endl;
 		}
 		else {
 			std::cout << "File Doesnt Exists\n" << std::endl;
 		}
-		return;
 	}
-	void DeleteFile(bool currentDirectory, std::string path) {
+	void DeleteFile(const bool currentDirectory, std::string path) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
+			path = pathBuilder(appDirectory, path);
 		}
-		else {
-			targetPath = path;
-		}
-		if (exists(targetPath)) {
+		if (exists(path)) {
 			std::cout << "File Exists\n" << std::endl;
-			std::filesystem::remove(targetPath);
+			std::filesystem::remove(path);
 			std::cout << "Success\n" << std::endl;
 		}
 		else {
 			std::cout << "File Doesnt Exists\n" << std::endl;
 		}
-		return;
 	}
 
 	//----------Copy Operations -------------------------------------------
 	//Tested Working 4/4/24
 	//--------------------------------------------------------------------------------
-	void CopyDirectory(bool relToCurrentDirectory, std::string currentDirectory, std::string currentDirectoryName, std::string newDirectory,  std::string newDirectoryName, bool directoriesOnly,bool overwriteExisting) { //Directory Copying
+	void CopyDirectory(bool relToCurrentDirectory, std::string currentDirectory, std::string currentDirectoryName,	std::string newDirectory, std::string newDirectoryName, const bool directoriesOnly, const bool overwriteExisting) { //Directory Copying
 		std::cout << "Full Path Selection\n" << std::endl;
 		if (relToCurrentDirectory) {
 			std::cout << "Current DIrectory\n" << std::endl;
-			copyPath = pathBuilder(appDirectory, pathBuilder(currentDirectory, currentDirectoryName));
-			targetPath = pathBuilder(appDirectory, pathBuilder(newDirectory, newDirectoryName));
+			currentDirectory = pathBuilder(appDirectory, pathBuilder(currentDirectory, currentDirectoryName));
+			newDirectoryName = pathBuilder(appDirectory, pathBuilder(newDirectory, newDirectoryName));
 		}
 		else {
 			std::cout << "Without Current Directory\n" << std::endl;
-			copyPath = pathBuilder(currentDirectory, currentDirectoryName);
-			targetPath = pathBuilder(newDirectory, newDirectoryName);
+			currentDirectory = pathBuilder(currentDirectory, currentDirectoryName);
+			newDirectoryName = pathBuilder(newDirectory, newDirectoryName);
 		}
 		std::cout << "Path Selected\n" << std::endl;
-		std::cout << "Copy Path: " << copyPath << std::endl;
-		std::cout << "Target Path: " << targetPath << std::endl;
-		if (exists(targetPath) && !overwriteExisting) {
+		std::cout << "Copy Path: " << currentDirectory << std::endl;
+		std::cout << "Target Path: " << newDirectoryName << std::endl;
+		if (exists(newDirectoryName) && !overwriteExisting) {
 			std::cout << "Directory Already Exists\n" << std::endl;			
 		}
 		else {
 			try {
 				if (directoriesOnly && overwriteExisting) { //Only copy directories and overwrite existing directories/files
 					std::cout << "Directories Only & Overwrite Existing\n" << std::endl;
-					const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::directories_only | std::filesystem::copy_options::overwrite_existing;
-					std::filesystem::copy(copyPath, targetPath, copyOptions);
+					constexpr std::filesystem::copy_options copyOptions = std::filesystem::copy_options::directories_only | std::filesystem::copy_options::overwrite_existing;
+					std::filesystem::copy(currentDirectory, newDirectoryName, copyOptions);
 					std::cout << "Success\n" << std::endl;
 				}
 				else if (directoriesOnly) { //Only copy directories, do not overwrite existing
 					std::cout << "Directories Only\n" << std::endl;
-					const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
-					std::filesystem::copy(copyPath, targetPath, copyOptions);
+					constexpr auto copyOptions = std::filesystem::copy_options::overwrite_existing;
+					std::filesystem::copy(currentDirectory, newDirectoryName, copyOptions);
 					std::cout << "Success\n" << std::endl;
 				}
 				else if (overwriteExisting) { //Copy directories & files, Overwrite Existing Directories/Files
 					std::cout << "Overwrite Existing\n" << std::endl;
-					const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
-					std::filesystem::copy(copyPath, targetPath, copyOptions);
+					constexpr auto copyOptions = std::filesystem::copy_options::overwrite_existing;
+					std::filesystem::copy(currentDirectory, newDirectoryName, copyOptions);
 					std::cout << "Success\n" << std::endl;
 				}
 				else { //Include Files & Do Not Overwrite Existing Directories/Files
 					std::cout << "No Options Selected\n" << std::endl;
-					std::filesystem::copy(copyPath, targetPath);
+					std::filesystem::copy(currentDirectory, newDirectoryName);
 					std::cout << "Success\n" << std::endl;
 				}
 			}
@@ -202,44 +184,38 @@ public:
 				std::cout << "Copy Failed with Error: " << error1.what() << std::endl;
 			}
 		}
-		return;
 	}
-	void CopyDirectory(bool relToCurrentDirectory, std::string currentPath, std::string newPath, bool directoriesOnly, bool overwriteExisting) { //Tested Working 3/30/24
+	void CopyDirectory(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool directoriesOnly, const bool overwriteExisting) { //Tested Working 3/30/24
 		if (relToCurrentDirectory) {
-			copyPath = pathBuilder(appDirectory, currentPath);
-			targetPath = pathBuilder(appDirectory, newPath);
+			currentPath = pathBuilder(appDirectory, currentPath);
+			newPath = pathBuilder(appDirectory, newPath);
 		}
-		else {
-			
-			copyPath = currentPath;
-			targetPath = newPath;
-		}		
-		if (exists(targetPath) && !overwriteExisting) {
+		if (exists(newPath) && !overwriteExisting) {
 			std::cout << "Directory Already Exists\n" << std::endl;
 		}
 		else {
 			try {
 				if (directoriesOnly && overwriteExisting) { //Only copy directories and overwrite existing directories/files
 					std::cout << "Directories Only & Overwrite Existing\n" << std::endl;
-					const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::directories_only | std::filesystem::copy_options::overwrite_existing;
-					std::filesystem::copy(copyPath, targetPath, copyOptions);
+					constexpr std::filesystem::copy_options copyOptions = std::filesystem::copy_options::directories_only | std::filesystem::copy_options::overwrite_existing;
+					std::filesystem::copy(currentPath, newPath, copyOptions);
 					std::cout << "Success\n" << std::endl;
 				}
 				else if (directoriesOnly) { //Only copy directories, do not overwrite existing
 					std::cout << "Directories Only\n" << std::endl;
-					const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
-					std::filesystem::copy(copyPath, targetPath, copyOptions);
+					constexpr auto copyOptions = std::filesystem::copy_options::overwrite_existing;
+					std::filesystem::copy(currentPath, newPath, copyOptions);
 					std::cout << "Success\n" << std::endl;
 				}
 				else if (overwriteExisting) { //Copy directories & files, Overwrite Existing Directories/Files
 					std::cout << "Overwrite Existing\n" << std::endl;
-					const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
-					std::filesystem::copy(copyPath, targetPath, copyOptions);
+					constexpr auto copyOptions = std::filesystem::copy_options::overwrite_existing;
+					std::filesystem::copy(currentPath, newPath, copyOptions);
 					std::cout << "Success\n" << std::endl;
 				}
 				else { //Include Files & Do Not Overwrite Existing Directories/Files
 					std::cout << "No Options Selected\n" << std::endl;
-					std::filesystem::copy(copyPath, targetPath);
+					std::filesystem::copy(currentPath, newPath);
 					std::cout << "Success\n" << std::endl;
 				}
 			}
@@ -247,83 +223,75 @@ public:
 				std::cout << "Copy Failed with Error: " << error1.what() << std::endl;
 			}
 		}
-		return;
 	}
-	void CopyFile(bool relToCurrentDirectory, std::string currentDirectory, std::string currentFileName, std::string newDirectory,  std::string newFileName, bool overwriteExisting) { //Tested Working 3/30/24
+	void CopyFile(const bool relToCurrentDirectory, std::string currentDirectory, std::string currentFileName, std::string newDirectory, std::string newFileName, bool overwriteExisting) { //Tested Working 3/30/24
 		if (relToCurrentDirectory) {
-			copyPath = pathBuilder(appDirectory, pathBuilder(currentDirectory, currentFileName));
-			targetPath = pathBuilder(appDirectory, pathBuilder(newDirectory, newFileName));
+			currentDirectory = pathBuilder(appDirectory, pathBuilder(currentDirectory, currentFileName));
+			newDirectory = pathBuilder(appDirectory, pathBuilder(newDirectory, newFileName));
 		}
 		else {
-			copyPath = pathBuilder(currentDirectory, currentFileName);
-			targetPath = pathBuilder(newDirectory, newFileName);
+			currentDirectory = pathBuilder(currentDirectory, currentFileName);
+			newDirectory = pathBuilder(newDirectory, newFileName);
 		}
-		std::cout << copyPath << "\n" << targetPath << std::endl;
-		if (!exists(targetPath)) {
+		// secondaryPath = currentDirectory
+		// path = newDirectory
+		std::cout << currentDirectory << "\n" << newDirectory << std::endl;
+		if (!exists(newDirectory)) {
 			if (overwriteExisting) {
-				const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
-				std::filesystem::copy(copyPath, targetPath, copyOptions);
+				constexpr std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
+				std::filesystem::copy(currentDirectory, newDirectory, copyOptions);
 			}
 			else {
-				std::filesystem::copy(copyPath, targetPath);
+				std::filesystem::copy(currentDirectory, newDirectory);
 			}
 		}
 		else {
 			std::cout << "File Already Exists\n" << std::endl;
 		}
-		
-		return;
 	}
-	void CopyFile(bool relToCurrentDirectory, std::string currentPath, std::string newPath, bool overwriteExisting) { //Tested Working 3/30/24
+	void CopyFile(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, bool overwriteExisting) { //Tested Working 3/30/24
 		if (relToCurrentDirectory) {
-			copyPath = pathBuilder(appDirectory, currentPath);
-			targetPath = pathBuilder(appDirectory, newPath);
-		}
-		else {
-			copyPath = currentPath;
-			targetPath = newPath;
+			currentPath = pathBuilder(appDirectory, currentPath);
+			newPath = pathBuilder(appDirectory, newPath);
 		}
 		std::cout << "Path Selected\n" << std::endl;
-		std::cout << "Copy Path: " << copyPath << std::endl;
-		std::cout << "Target Path: " << targetPath << std::endl;
-		if (!exists(targetPath)) {
+		std::cout << "Copy Path: " << currentPath << std::endl;
+		std::cout << "Target Path: " << newPath << std::endl;
+		if (!exists(newPath)) {
 			if (overwriteExisting) {
-				const std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
-				std::filesystem::copy(copyPath, targetPath, copyOptions);
+				constexpr std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
+				std::filesystem::copy(currentPath, newPath, copyOptions);
 			}
 			else {
-				std::filesystem::copy(copyPath, targetPath);
+				std::filesystem::copy(currentPath, newPath);
 			}
 			std::cout << "Success\n" << std::endl;
 		}
 		else {
 			std::cout << "File Already Exists\n" << std::endl;
 		}
-		return;
 	}
 	
 	//----------Move Operations -------------------------------------------
 	//Tested Working 4/4/24
 	//--------------------------------------------------------------------------------
-	void MoveDirectory(bool relToCurrentDirectory, std::string currentDirectory, std::string currentDirectoryName, std::string newDirectory,  std::string newDirectoryName, bool overwriteExisting) { //Directory Moving
+	//Directory Moving
+	void MoveDirectory(const bool relToCurrentDirectory, std::string currentDirectory, std::string currentDirectoryName, std::string newDirectory, std::string newDirectoryName, const bool overwriteExisting) {
 		CopyDirectory(relToCurrentDirectory, currentDirectory, currentDirectoryName, newDirectory, newDirectoryName, false, overwriteExisting);
 		DeleteDirectory(relToCurrentDirectory, pathBuilder( currentDirectory, currentDirectoryName), true);
-		return;
 	}
-	void MoveDirectory(bool relToCurrentDirectory, std::string currentPath, std::string newPath, bool overwriteExisting) {
+	void MoveDirectory(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool overwriteExisting) {
 		CopyDirectory(relToCurrentDirectory, currentPath, newPath, false, overwriteExisting);
 		DeleteDirectory(relToCurrentDirectory, currentPath, true);
-		return;
 	}
-	void MoveFile(bool relToCurrentDirectory, std::string currentDirectory, std::string currentFileName, std::string newDirectory,  std::string newFileName, bool overwriteExisting) { //File Moving
+	//File Moving
+	void MoveFile(const bool relToCurrentDirectory, std::string currentDirectory, std::string currentFileName, std::string newDirectory, std::string newFileName, const bool overwriteExisting) {
 		CopyFile(relToCurrentDirectory, currentDirectory, currentFileName, newDirectory, newFileName, overwriteExisting);
 		DeleteFile(relToCurrentDirectory, currentDirectory, currentFileName);
-		return;
-	}	
-	void MoveFile(bool relToCurrentDirectory, std::string currentPath, std::string newPath, bool overwriteExisting) {
+	}
+	void MoveFile(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool overwriteExisting) {
 		CopyFile(relToCurrentDirectory, currentPath, newPath, overwriteExisting);
 		DeleteFile(relToCurrentDirectory, currentPath);
-		return;
 	}
 
 
@@ -331,20 +299,17 @@ public:
 	//Tested Working 3/28/24
 	//Updated Working 3/30/24
 	//--------------------------------------------------------------------------------
-	std::string Read(bool currentDirectory, std::string directory, std::string fileName) {
+	std::string Read(const bool currentDirectory, std::string directory, std::string fileName) {
 		return Read(currentDirectory, pathBuilder(directory, fileName));
 	}
-	std::string Read(bool currentDirectory, std::string directory, std::string fileName, int line) {
+	std::string Read(const bool currentDirectory, std::string directory, std::string fileName, int line) {
 		return Read(currentDirectory, pathBuilder(directory, fileName), line);
 	}
-	std::string Read(bool currentDirectory, std::string path) {
+	std::string Read(const bool currentDirectory, std::string path) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
+			path = pathBuilder(appDirectory, path);
 		}
-		else {
-			targetPath = path;
-		}
-		file.open(targetPath, std::ios::in |std::ios::beg);
+		file.open(path, static_cast<std::ios_base::openmode>(std::ios::in |std::ios::beg));
 
 		if (file.is_open()) {			
 			buffer << file.rdbuf();
@@ -356,14 +321,11 @@ public:
 		file.close();
 		return contents;
 	}
-	std::string Read(bool currentDirectory, std::string path, int line) {
+	std::string Read(const bool currentDirectory, std::string path, const int line) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
+			path = pathBuilder(appDirectory, path);
 		}
-		else {
-			targetPath = path;
-		}
-		file.open(targetPath, std::ios::in | std::ios::beg);
+		file.open(path, static_cast<std::ios_base::openmode>(std::ios::in | std::ios::beg));
 
 		for (int i = 0; i < line - 1; ++i) {
 			file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -377,39 +339,32 @@ public:
 	//Tested Working 4/5/24
 	//--------------------------------------------------------------------------------
 	//Write All
-	void Write(bool currentDirectory, bool overwriteExisting, std::string path, std::string inputContent) {
+	void Write(const bool currentDirectory, const bool overwriteExisting, std::string path, std::string inputContent) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
+			path = pathBuilder(appDirectory, path);
 		}
-		else {
-			targetPath = path;
+		//path = path
+		if (!exists(path)) {
+			Create(File, false, path);
 		}
-		if (!exists(targetPath)) {
-			Create(File, false, targetPath);
-		}
-		file.open(targetPath, std::ios::out | std::ios::end);
+		file.open(path, static_cast<std::ios_base::openmode>(std::ios::out | std::ios::end));
 		file << inputContent << std::endl;
 		file.close();
-		return;
 	}
-	void Write(bool currentDirectory, bool overwriteExisting, std::string directory, std::string fileName, std::string inputContent) {
+	void Write(const bool currentDirectory, const bool overwriteExisting, std::string directory, std::string fileName, std::string inputContent) {
 		Write(currentDirectory, overwriteExisting, pathBuilder(directory, fileName), inputContent);
-		return;
 	}
-	void Write_Mem(bool currentDirectory, bool overwriteExisting, std::string path, std::string inputContent, int line) {
+	void Write_Mem(const bool currentDirectory, const bool overwriteExisting, std::string path, std::string inputContent, int line) {
 		//Set Directory
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
-		}
-		else {
-			targetPath = path;
+			path = pathBuilder(appDirectory, path);
 		}
 		//Creates file if it doesnt already exist
-		if (!exists(targetPath)) {
-			Create(File, false, targetPath);
+		if (!exists(path)) {
+			Create(File, false, path);
 		}
 		//Open file in read/write mode at location 0
-		file.open(targetPath, std::ios::in | std::ios::out |std::ios::beg);
+		file.open(path, static_cast<std::ios_base::openmode>(std::ios::in | std::ios::out |std::ios::beg));
 		//If file successfully opened run edit line operations
 		if (file.is_open()) {
 			//Set up variables for operation
@@ -453,17 +408,17 @@ public:
 					std::cout << "Line Found" << currentLine << "=" << line << std::endl;
 					if (overwriteExisting) {
 						std::cout << "Input\n";
-						if (!(currentLine == 1)) {
+						if (currentLine != 1) {
 							contents += "\n";
 						}
 						contents += inputContent;
 					}
 					else {
 						std::cout << "Operation: Passing Line + Input\n";
-						if (!(currentLine == 1)) {
+						if (currentLine != 1) {
 							contents += "\n";
 						}
-						if (!(currentLine > totalLines)) {
+						if (currentLine <= totalLines) {
 							contents += sbuffer;
 						}
 						contents += inputContent;
@@ -475,7 +430,7 @@ public:
 					if (currentLine > totalLines) {
 						contents += "\n";
 					} else {
-						if (!(currentLine == 1)) {
+						if (currentLine != 1) {
 							contents += "\n";
 						}
 						contents += sbuffer;
@@ -496,26 +451,20 @@ public:
 		else {
 			std::cout << "!!File Failed to Open!!\n\n\n";
 		}
-		
-		return;
 	}
 	void Write(bool currentDirectory, bool overwriteExisting, std::string path, std::string inputContent, int line) { //Not working properly, memory version is for reference
 		//Set Directory
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
-		}
-		else {
-			targetPath = path;
-		}
-		
+			path = pathBuilder(appDirectory, path);
+		}		
 
 		//Creates file if it doesnt already exist
-		if (!exists(targetPath)) {
-			Create(File, false, targetPath);
+		if (!exists(path)) {
+			Create(File, false, path);
 		}		
 
 		//Open original in read/write mode at location 0
-		file.open(targetPath, std::ios::in | std::ios::beg);
+		file.open(path, static_cast<std::ios_base::openmode>(std::ios::in | std::ios::beg));
 		
 		
 		if (file.is_open()) {
@@ -547,22 +496,22 @@ public:
 			//Reset location to 0
 			file.seekg(0);
 
-			copyPath = targetPath + ".tmp";
+			secondaryPath = path + ".tmp";
 
 
-			std::cout << "Target Path: " + targetPath + "\n";
-			std::cout << "Copy Path: " + copyPath + "\n";
-			if (!exists(copyPath)) {
-				Create(File, false, copyPath);
+			std::cout << "Target Path: " + path + "\n";
+			std::cout << "Copy Path: " + secondaryPath + "\n";
+			if (!exists(secondaryPath)) {
+				Create(File, false, secondaryPath);
 			} else {
 				std::cout << "ERROR: Temp file already exists, aborting operation\n";
 				return;
 			}
-			std::cout << "Target Path: " + targetPath + "\n";
-			std::cout << "Copy Path: " + copyPath + "\n";
+			std::cout << "Target Path: " + path + "\n";
+			std::cout << "Copy Path: " + secondaryPath + "\n";
 
 			//Open temp file in write mode at location 0
-			temp.open(copyPath, std::ios::out | std::ios::beg);
+			temp.open(secondaryPath, static_cast<std::ios_base::openmode>(std::ios::out | std::ios::beg));
 			//If original file and temp file are successfully opened, run operation - checks are run independantly for error reporting
 			if (temp.is_open()) {	
 				//Take data in for each line and add it to the contents string that will get output into the target file
@@ -583,17 +532,17 @@ public:
 						std::cout << "Line Found" << currentLine << "=" << line << std::endl;
 						if (overwriteExisting) {
 							std::cout << "Input\n";
-							if (!(currentLine == 1)) {
+							if (currentLine != 1) {
 								temp << "\n";
 							}
 							temp << inputContent;
 						}
 						else {
 							std::cout << "Operation: Passing Line + Input\n";
-							if (!(currentLine == 1)) {
+							if (currentLine != 1) {
 								temp << "\n";
 							}
-							if (!(currentLine > totalLines)) {
+							if (currentLine <= totalLines) {
 								temp << sbuffer;
 							}
 							temp << inputContent;
@@ -606,7 +555,7 @@ public:
 							temp << "\n";
 						}
 						else {
-							if (!(currentLine == 1)) {
+							if (currentLine != 1) {
 								temp << "\n";
 							}
 							temp << sbuffer;
@@ -621,13 +570,13 @@ public:
 				buffer.rdbuf()->str(EMPTY);
 				totalLines = 0;
 
-				std::cout << "Target Path: " + targetPath + "\n";
-				std::cout << "Copy Path: " + copyPath + "\n";
+				std::cout << "Target Path: " + path + "\n";
+				std::cout << "Copy Path: " + secondaryPath + "\n";
 
-				std::filesystem::remove(targetPath);
+				std::filesystem::remove(path);
 				std::cout << "Original File Removed\n" << std::endl;
 
-				std::filesystem::rename(copyPath, targetPath);
+				std::filesystem::rename(secondaryPath, path);
 				std::cout << "Temp File Renamed\n" << std::endl;
 			}
 			else {
@@ -637,31 +586,30 @@ public:
 		else {
 			std::cout << "!!Original File Failed to Open!!\n\n\n";
 		}
-		return;
 	}
 	void Write(bool currentDirectory, bool overwriteExisting, std::string directory, std::string fileName, std::string inputContent, int line) {
 		Write(currentDirectory, overwriteExisting, pathBuilder(directory, fileName), inputContent, line);
-		return;
 	}
 
 	//---------------------Additional Operations---------------------------
 	//Tested Working 3/30/24
 	//--------------------------------------------------------------------------------
-	bool exists(bool currentDirectory, std::string path) {
+	bool exists(const bool currentDirectory, std::string path) {
 		if (currentDirectory) {
-			targetPath = pathBuilder(appDirectory, path);
+			path = pathBuilder(appDirectory, path);
 		}
 		else {
-			targetPath = path;
+			path = path;
 		}
-		return std::filesystem::exists(targetPath);
+		return std::filesystem::exists(path);
 	}
-	bool exists(std::string path) {
+
+	static bool exists(std::string path) {
 		return std::filesystem::exists(path);
 	}
 	
 
 	//Constructor/Destructor
-	FILEMANAGEMENT() {	}
-	~FILEMANAGEMENT() {}
+	FILEMANAGEMENT() = default;
+	~FILEMANAGEMENT() = default;
 };
