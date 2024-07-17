@@ -598,9 +598,6 @@ public:
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
 		}
-		else {
-			path = path;
-		}
 		return std::filesystem::exists(path);
 	}
 
