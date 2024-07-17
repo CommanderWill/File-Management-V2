@@ -44,7 +44,7 @@ protected:
 	std::string sbuffer;
 
 	//functions that provide common operations but arnt needed outside of the class
-	static std::string pathBuilder(std::string directory, std::string name) {
+	static std::string pathBuilder(const std::string& directory, const std::string& name) {
 		return directory + "\\" + name;
 	}
 
@@ -54,7 +54,8 @@ public:
 	//---------------------Directory/File Operations---------------------
 	//Tested Working 3/30/24
 	//--------------------------------------------------------------------------------
-	void Create(const itemType itemType, const bool currentDirectory, std::string directory, std::string name) {
+	void Create(const itemType itemType, const bool currentDirectory, std::string directory, const std::string& name) const
+	{
 		if (currentDirectory) {
 			directory = pathBuilder(appDirectory, pathBuilder(directory, name));
 		}
@@ -70,7 +71,8 @@ public:
 		}
 		//In the future no-solution errorhandling goes here
 	}
-	void Create(const itemType itemType, const bool currentDirectory, std::string path) {
+	void Create(const itemType itemType, const bool currentDirectory, std::string path) const
+	{
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
 		}
@@ -83,7 +85,8 @@ public:
 		}
 		//In the future no-solution errorhandling goes here
 	}
-	void DeleteDirectory(const bool currentDirectory, std::string directory, const bool deleteIfNotEmpty) {
+	void DeleteDirectory(const bool currentDirectory, std::string directory, const bool deleteIfNotEmpty) const
+	{
 		if (currentDirectory) {
 			directory = pathBuilder(appDirectory, directory);
 		}
@@ -104,7 +107,8 @@ public:
 			std::cout << "Directory Doesnt Exists\n" << std::endl;
 		}
 	}
-	void DeleteFile(const bool currentDirectory, std::string directory, std::string name) {
+	void DeleteFile(const bool currentDirectory, std::string directory, const std::string& name) const
+	{
 		if (currentDirectory) {
 			directory = pathBuilder(appDirectory, pathBuilder(directory, name));
 		}
@@ -120,7 +124,8 @@ public:
 			std::cout << "File Doesnt Exists\n" << std::endl;
 		}
 	}
-	void DeleteFile(const bool currentDirectory, std::string path) {
+	void DeleteFile(const bool currentDirectory, std::string path) const
+	{
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
 		}
@@ -137,7 +142,8 @@ public:
 	//----------Copy Operations -------------------------------------------
 	//Tested Working 4/4/24
 	//--------------------------------------------------------------------------------
-	void CopyDirectory(bool relToCurrentDirectory, std::string currentDirectory, std::string currentDirectoryName,	std::string newDirectory, std::string newDirectoryName, const bool directoriesOnly, const bool overwriteExisting) { //Directory Copying
+	void CopyDirectory(const bool relToCurrentDirectory, std::string currentDirectory, const std::string& currentDirectoryName, const std::string& newDirectory, std::string newDirectoryName, const bool directoriesOnly, const bool overwriteExisting) const
+	{ //Directory Copying
 		std::cout << "Full Path Selection\n" << std::endl;
 		if (relToCurrentDirectory) {
 			std::cout << "Current DIrectory\n" << std::endl;
@@ -186,7 +192,8 @@ public:
 			}
 		}
 	}
-	void CopyDirectory(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool directoriesOnly, const bool overwriteExisting) { //Tested Working 3/30/24
+	void CopyDirectory(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool directoriesOnly, const bool overwriteExisting) const
+	{ //Tested Working 3/30/24
 		if (relToCurrentDirectory) {
 			currentPath = pathBuilder(appDirectory, currentPath);
 			newPath = pathBuilder(appDirectory, newPath);
@@ -225,7 +232,7 @@ public:
 			}
 		}
 	}
-	void CopyFile(const bool relToCurrentDirectory, std::string currentDirectory, std::string currentFileName, std::string newDirectory, std::string newFileName, bool overwriteExisting) { //Tested Working 3/30/24
+	void CopyFile(const bool relToCurrentDirectory, std::string currentDirectory, const std::string& currentFileName, std::string newDirectory, const std::string& newFileName, const bool overwriteExisting) const { //Tested Working 3/30/24
 		if (relToCurrentDirectory) {
 			currentDirectory = pathBuilder(appDirectory, pathBuilder(currentDirectory, currentFileName));
 			newDirectory = pathBuilder(appDirectory, pathBuilder(newDirectory, newFileName));
@@ -239,7 +246,7 @@ public:
 		std::cout << currentDirectory << "\n" << newDirectory << std::endl;
 		if (!exists(newDirectory)) {
 			if (overwriteExisting) {
-				constexpr std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
+				constexpr auto copyOptions = std::filesystem::copy_options::overwrite_existing;
 				std::filesystem::copy(currentDirectory, newDirectory, copyOptions);
 			}
 			else {
@@ -250,7 +257,7 @@ public:
 			std::cout << "File Already Exists\n" << std::endl;
 		}
 	}
-	void CopyFile(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, bool overwriteExisting) { //Tested Working 3/30/24
+	void CopyFile(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool overwriteExisting) const { //Tested Working 3/30/24
 		if (relToCurrentDirectory) {
 			currentPath = pathBuilder(appDirectory, currentPath);
 			newPath = pathBuilder(appDirectory, newPath);
@@ -260,7 +267,7 @@ public:
 		std::cout << "Target Path: " << newPath << std::endl;
 		if (!exists(newPath)) {
 			if (overwriteExisting) {
-				constexpr std::filesystem::copy_options copyOptions = std::filesystem::copy_options::overwrite_existing;
+				constexpr auto copyOptions = std::filesystem::copy_options::overwrite_existing;
 				std::filesystem::copy(currentPath, newPath, copyOptions);
 			}
 			else {
@@ -277,20 +284,23 @@ public:
 	//Tested Working 4/4/24
 	//--------------------------------------------------------------------------------
 	//Directory Moving
-	void MoveDirectory(const bool relToCurrentDirectory, std::string currentDirectory, std::string currentDirectoryName, std::string newDirectory, std::string newDirectoryName, const bool overwriteExisting) {
+	void MoveDirectory(const bool relToCurrentDirectory, const std::string& currentDirectory, const std::string& currentDirectoryName, const std::string& newDirectory, const std::string& newDirectoryName, const bool overwriteExisting) const
+	{
 		CopyDirectory(relToCurrentDirectory, currentDirectory, currentDirectoryName, newDirectory, newDirectoryName, false, overwriteExisting);
 		DeleteDirectory(relToCurrentDirectory, pathBuilder( currentDirectory, currentDirectoryName), true);
 	}
-	void MoveDirectory(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool overwriteExisting) {
+	void MoveDirectory(const bool relToCurrentDirectory, const std::string& currentPath, const std::string& newPath, const bool overwriteExisting) const {
 		CopyDirectory(relToCurrentDirectory, currentPath, newPath, false, overwriteExisting);
 		DeleteDirectory(relToCurrentDirectory, currentPath, true);
 	}
 	//File Moving
-	void MoveFile(const bool relToCurrentDirectory, std::string currentDirectory, std::string currentFileName, std::string newDirectory, std::string newFileName, const bool overwriteExisting) {
+	void MoveFile(const bool relToCurrentDirectory, const std::string& currentDirectory, const std::string& currentFileName, const std::string& newDirectory, const std::string& newFileName, const bool overwriteExisting) const
+	{
 		CopyFile(relToCurrentDirectory, currentDirectory, currentFileName, newDirectory, newFileName, overwriteExisting);
 		DeleteFile(relToCurrentDirectory, currentDirectory, currentFileName);
 	}
-	void MoveFile(const bool relToCurrentDirectory, std::string currentPath, std::string newPath, const bool overwriteExisting) {
+	void MoveFile(const bool relToCurrentDirectory, const std::string& currentPath, const std::string& newPath, const bool overwriteExisting) const
+	{
 		CopyFile(relToCurrentDirectory, currentPath, newPath, overwriteExisting);
 		DeleteFile(relToCurrentDirectory, currentPath);
 	}
@@ -300,10 +310,10 @@ public:
 	//Tested Working 3/28/24
 	//Updated Working 3/30/24
 	//--------------------------------------------------------------------------------
-	std::string Read(const bool currentDirectory, std::string directory, std::string fileName) {
+	std::string Read(const bool currentDirectory, const std::string& directory, const std::string& fileName) {
 		return Read(currentDirectory, pathBuilder(directory, fileName));
 	}
-	std::string Read(const bool currentDirectory, std::string directory, std::string fileName, int line) {
+	std::string Read(const bool currentDirectory, const std::string& directory, const std::string& fileName, const int line) {
 		return Read(currentDirectory, pathBuilder(directory, fileName), line);
 	}
 	std::string Read(const bool currentDirectory, std::string path) {
@@ -340,7 +350,7 @@ public:
 	//Tested Working 4/5/24
 	//--------------------------------------------------------------------------------
 	//Write All
-	void Write(const bool currentDirectory, const bool overwriteExisting, std::string path, std::string inputContent) {
+	void Write(const bool currentDirectory, const bool overwriteExisting, std::string path, const std::string& inputContent) {
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
 		}
@@ -352,10 +362,10 @@ public:
 		file << inputContent << std::endl;
 		file.close();
 	}
-	void Write(const bool currentDirectory, const bool overwriteExisting, std::string directory, std::string fileName, std::string inputContent) {
+	void Write(const bool currentDirectory, const bool overwriteExisting, const std::string& directory, const std::string& fileName, const std::string& inputContent) {
 		Write(currentDirectory, overwriteExisting, pathBuilder(directory, fileName), inputContent);
 	}
-	void Write_Mem(const bool currentDirectory, const bool overwriteExisting, std::string path, std::string inputContent, int line) {
+	void Write_Mem(const bool currentDirectory, const bool overwriteExisting, std::string path, const std::string& inputContent, const int line) {
 		//Set Directory
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
@@ -453,7 +463,7 @@ public:
 			std::cout << "!!File Failed to Open!!\n\n\n";
 		}
 	}
-	void Write(bool currentDirectory, bool overwriteExisting, std::string path, std::string inputContent, int line) { //Not working properly, memory version is for reference
+	void Write(const bool currentDirectory, const bool overwriteExisting, std::string path, const std::string& inputContent, const int line) { //Not working properly, memory version is for reference
 		//Set Directory
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
@@ -598,21 +608,22 @@ public:
 			std::cout << "!!Original File Failed to Open!!\n\n\n";
 		}
 	}
-	void Write(bool currentDirectory, bool overwriteExisting, std::string directory, std::string fileName, std::string inputContent, int line) {
+	void Write(const bool currentDirectory, const bool overwriteExisting, const std::string& directory, const std::string& fileName, const std::string& inputContent, const int line) {
 		Write(currentDirectory, overwriteExisting, pathBuilder(directory, fileName), inputContent, line);
 	}
 
 	//---------------------Additional Operations---------------------------
 	//Tested Working 3/30/24
 	//--------------------------------------------------------------------------------
-	bool exists(const bool currentDirectory, std::string path) {
+	bool exists(const bool currentDirectory, std::string path) const
+	{
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
 		}
 		return std::filesystem::exists(path);
 	}
 
-	static bool exists(std::string path) {
+	static bool exists(const std::string& path) {
 		return std::filesystem::exists(path);
 	}
 	
