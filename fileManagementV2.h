@@ -141,7 +141,7 @@ public:
 	//----------Copy Operations -------------------------------------------
 	//Tested Working 4/4/24
 	//--------------------------------------------------------------------------------
-	void CopyDirectory(bool relToCurrentDirectory, std::string currentDirectory, const std::string& currentDirectoryName, const std::string& newDirectory, std::string newDirectoryName, const bool directoriesOnly, const bool overwriteExisting) const
+	void CopyDirectory(const bool relToCurrentDirectory, std::string currentDirectory, const std::string& currentDirectoryName, const std::string& newDirectory, std::string newDirectoryName, const bool directoriesOnly, const bool overwriteExisting) const
 	{ //Directory Copying
 		std::cout << "Full Path Selection\n" << std::endl;
 		if (relToCurrentDirectory) {
