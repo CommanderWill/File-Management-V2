@@ -101,6 +101,9 @@ int main() {
 		std::cout << "\n\nRewriting line 2 on existing file\n";
 		fm.Write(true, false, "fillLine2.txt", message, line);
 
+		std::cout << "\n\nUpdated File Contents:\n";
+		fm.Read(true, "fillLine2.txt");
+
 
 		std::cout << "Select An Option:\n1. Repeat\n0. End\n";
 		std::cin >> appActive;

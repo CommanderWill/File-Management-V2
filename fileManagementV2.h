@@ -20,7 +20,7 @@
 // PLANNED FUNCTIONALITY:
 // - Write
 // 
-// Last progress date: 4/4/2024
+// Last progress date: 7/16/2024
 // Last progress time: 2044
 // Last progress: added base for write functions
 //-----------------------------------------------------------------------------------------------------------------------------------
@@ -38,6 +38,7 @@ protected:
 	int currentLine{};
 	int endLine{};
 	std::fstream file;
+	std::ifstream readFile;
 	std::ofstream temp;
 	std::ostringstream buffer;
 	std::string sbuffer;
@@ -464,40 +465,49 @@ public:
 		}		
 
 		//Open original in read/write mode at location 0
-		file.open(path, static_cast<std::ios_base::openmode>(std::ios::in | std::ios::beg));
+		readFile.open(path, static_cast<std::ios_base::openmode>(std::ios::in | std::ios::beg));
 		
 		
-		if (file.is_open()) {
+		if (readFile.is_open()) {
 			std::cout << "\n\nBeginning Line Write Operation\n";
 			//Set up variables for operation
 			contents = "TEST";
-			std::cout << "Current Contents: {" << contents << "} Size: {" << contents.size() << "} chars\n";
-			file.seekg(0);
-			buffer << file.rdbuf();
+			std::cout << "Current Contents: {\n" << contents << "\n} Size: {\n" << contents.size() << "\n} chars\n";
+			readFile.seekg(0);
+			buffer << readFile.rdbuf();
 			contents = buffer.str();
-			std::cout << "Current Contents: {" << contents << "} Size: {" << contents.size() << "} chars\n";
+			std::cout << "Current Contents: {\n" << contents << "\n} Size: {\n" << contents.size() << "\n} chars\n";
 
 			currentLine = 1;
 			std::cout << "Getting Total Lines\n";
-			file.seekg(0);
-			while (!file.eof()) {
-				getline(file, sbuffer);
+			readFile.seekg(0, std::ios::beg);
+			std::cout << "Position Zero: " << readFile.tellg() << std::endl;
+			while (!readFile.eof()) {
+				getline(readFile, sbuffer);
 				std::cout << "Line # " << totalLines << ": " << sbuffer << std::endl;
 				totalLines++;
 			}
+			//Reset location to 0
+			readFile.seekg(0, std::ios::beg);
+			std::cout << "Position Zero: " << readFile.tellg() << std::endl;
 			std::cout << "Total Current Lines: " << totalLines;
-			std::cout << "\n\nRunning File Streaming\n\n";
+			std::cout << "\n\nRunning readFile Streaming\n\n";
 			if (line > totalLines) {
 				endLine = line;
 			} else {
 				endLine = totalLines;
 			}
 
-			//Reset location to 0
-			file.seekg(0);
-
 			secondaryPath = path + ".tmp";
 
+			std::cout << "\n\n---TEST 071624-1---\n";
+			while (!readFile.eof()) {
+				std::cout << "Start Char: " << readFile.tellg();
+				getline(readFile, sbuffer);
+				std::cout << "	End Char: " << readFile.tellg() << "Contents: " << sbuffer << std::endl;
+			}
+			readFile.seekg(0);
+			std::cout << "---END TEST 071624---\n\n";
 
 			std::cout << "Target Path: " + path + "\n";
 			std::cout << "Copy Path: " + secondaryPath + "\n";
@@ -513,6 +523,7 @@ public:
 			//Open temp file in write mode at location 0
 			temp.open(secondaryPath, static_cast<std::ios_base::openmode>(std::ios::out | std::ios::beg));
 			//If original file and temp file are successfully opened, run operation - checks are run independantly for error reporting
+			
 			if (temp.is_open()) {	
 				//Take data in for each line and add it to the contents string that will get output into the target file
 				while (currentLine < (endLine + 1)) {
@@ -523,13 +534,13 @@ public:
 					}
 					else {
 						std::cout << "Operation: Passing Line + Input\n";
-						getline(file, sbuffer);
+						getline(readFile, sbuffer);
 					}
 
 					std::cout << "Line #" << currentLine << " -----------------------------------------\nBuffer Contents: {" << sbuffer << "} Size: {" << sbuffer.size() << "} chars\n";
 					//When the target line is reached determine what the line will be equal to
 					if (currentLine == line) {
-						std::cout << "Line Found" << currentLine << "=" << line << std::endl;
+						std::cout << "Line Found: " << currentLine << "=" << line << std::endl;
 						if (overwriteExisting) {
 							std::cout << "Input\n";
 							if (currentLine != 1) {
@@ -564,7 +575,7 @@ public:
 					//Increase line by 1
 					currentLine++;
 				}
-				file.close();
+				readFile.close();
 				temp.close();
 
 				buffer.rdbuf()->str(EMPTY);
@@ -597,9 +608,6 @@ public:
 	bool exists(const bool currentDirectory, std::string path) {
 		if (currentDirectory) {
 			path = pathBuilder(appDirectory, path);
-		}
-		else {
-			path = path;
 		}
 		return std::filesystem::exists(path);
 	}
