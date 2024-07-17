@@ -490,17 +490,44 @@ public:
 
 			currentLine = 1;
 			std::cout << "Getting Total Lines\n";
-			readFile.seekg(0, std::ios::beg);
+			readFile.seekg(0);
 			std::cout << "Position Zero: " << readFile.tellg() << std::endl;
 			while (!readFile.eof()) {
+				readFile.ignore(0,'\n');
 				getline(readFile, sbuffer);
 				std::cout << "Line # " << totalLines << ": " << sbuffer << std::endl;
 				totalLines++;
 			}
 			//Reset location to 0
-			readFile.seekg(0, std::ios::beg);
-			std::cout << "Position Zero: " << readFile.tellg() << std::endl;
-			std::cout << "Total Current Lines: " << totalLines;
+			
+
+			if (readFile.eof()) {
+				std::cout << "ERROR: End Of File\n";
+			} else if (readFile.fail()) {
+				std::cout << "ERROR: End Of File\n";
+			} else if (readFile.bad()) {
+				std::cout << "ERROR: End Of File\n";
+			}
+			readFile.clear();
+
+			try {
+				readFile.seekg(0);
+				if (readFile.eof()) {
+					throw "ERROR: End Of File\n";
+				}
+				else if (readFile.fail()) {
+					throw "ERROR: End Of File\n";
+				}
+				else if (readFile.bad()) {
+					throw "ERROR: End Of File\n";
+				}
+			}
+			catch (std::string thrownError) {
+				std::cout << thrownError;
+			}
+			
+			std::cout << "Position Zero: " << readFile.tellg();
+			std::cout << "\nTotal Current Lines: " << totalLines;
 			std::cout << "\n\nRunning readFile Streaming\n\n";
 			if (line > totalLines) {
 				endLine = line;
@@ -513,10 +540,12 @@ public:
 			std::cout << "\n\n---TEST 071624-1---\n";
 			while (!readFile.eof()) {
 				std::cout << "Start Char: " << readFile.tellg();
+				readFile.ignore(0, '\n');
 				getline(readFile, sbuffer);
-				std::cout << "	End Char: " << readFile.tellg() << "Contents: " << sbuffer << std::endl;
+				std::cout << "	End Char: " << readFile.tellg() << " Contents: " << sbuffer << std::endl;
 			}
 			readFile.seekg(0);
+			readFile.clear();
 			std::cout << "---END TEST 071624---\n\n";
 
 			std::cout << "Target Path: " + path + "\n";
