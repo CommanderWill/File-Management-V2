@@ -99,7 +99,7 @@ int main() {
 		getline(std::cin, message);
 
 		std::cout << "\n\nRewriting line 2 on existing file\n";
-		fm.Write(true, false, "fillLine2.txt", message, line);
+		fm.Write(true, true, "fillLine2.txt", message, line);
 
 		std::cout << "\n\nUpdated File Contents:\n";
 		fm.Read(true, "fillLine2.txt");

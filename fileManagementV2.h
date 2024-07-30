@@ -489,18 +489,20 @@ public:
 			std::cout << "Current Contents: {\n" << contents << "\n} Size: {\n" << contents.size() << "\n} chars\n";
 
 			currentLine = 1;
-			std::cout << "Getting Total Lines\n";
+			std::cout << "-----START GATHERING ORIGINAL FILE DATA-----\n";
 			readFile.seekg(0);
 			std::cout << "Position Zero: " << readFile.tellg() << std::endl;
 			while (!readFile.eof()) {
-				readFile.ignore(0,'\n');
+				std::cout << "Line # " << totalLines  << " | Start Char: " << readFile.tellg();
+				readFile.ignore(0, '\n');
 				getline(readFile, sbuffer);
-				std::cout << "Line # " << totalLines << ": " << sbuffer << std::endl;
+				std::cout << " | End Char: " << readFile.tellg() << " | Contents: " << sbuffer << std::endl;
 				totalLines++;
 			}
+			std::cout << "-----END GATHERING ORIGINAL FILE DATA-----\n";
 			//Reset location to 0
 			
-
+			//Check if errors exist for console error displaying
 			if (readFile.eof()) {
 				std::cout << "ERROR: End Of File\n";
 			} else if (readFile.fail()) {
@@ -509,7 +511,6 @@ public:
 				std::cout << "ERROR: End Of File\n";
 			}
 			readFile.clear();
-
 			try {
 				readFile.seekg(0);
 				if (readFile.eof()) {
@@ -537,17 +538,6 @@ public:
 
 			secondaryPath = path + ".tmp";
 
-			std::cout << "\n\n---TEST 071624-1---\n";
-			while (!readFile.eof()) {
-				std::cout << "Start Char: " << readFile.tellg();
-				readFile.ignore(0, '\n');
-				getline(readFile, sbuffer);
-				std::cout << "	End Char: " << readFile.tellg() << " Contents: " << sbuffer << std::endl;
-			}
-			readFile.seekg(0);
-			readFile.clear();
-			std::cout << "---END TEST 071624---\n\n";
-
 			std::cout << "Target Path: " + path + "\n";
 			std::cout << "Copy Path: " + secondaryPath + "\n";
 			if (!exists(secondaryPath)) {
@@ -568,11 +558,11 @@ public:
 				while (currentLine < (endLine + 1)) {
 					//If on a line that doesnt exist yet set to newline
 					if (currentLine > totalLines) {
-						std::cout << "Current Line:" << currentLine << "> Total Lines:" << totalLines << std::endl;
+						std::cout << "Operation: Setting Line Data to Blank";
 						sbuffer = "\n";
 					}
 					else {
-						std::cout << "Operation: Passing Line + Input\n";
+						std::cout << "Operation: Getting Line Data\n";
 						getline(readFile, sbuffer);
 					}
 
@@ -631,7 +621,8 @@ public:
 			}
 			else {
 				std::cout << "Temp File Failed To Open\n";
-			}			
+			}
+			readFile.clear();
 		}
 		else {
 			std::cout << "!!Original File Failed to Open!!\n\n\n";
