@@ -78,6 +78,7 @@ int main() {
 	int line;
 	std::string message;
 	bool appActive = true;
+	bool overWrite;
 
 	fm.DeleteFile(true, "fillLine2.txt");
 	fm.Create(FILEMANAGEMENT::File, true, "fillLine2.txt");
@@ -97,9 +98,12 @@ int main() {
 		std::cout << "Type Message to Write:\n";
 		std::cin.ignore();
 		getline(std::cin, message);
+		std::cout << "Would you like to overwrite the line? (true/false): ";
+		std::cin >> overWrite;
+
 
 		std::cout << "\n\nRewriting line 2 on existing file\n";
-		fm.Write(true, true, "fillLine2.txt", message, line);
+		fm.Write(true, overWrite, "fillLine2.txt", message, line);
 
 		std::cout << "\n\nUpdated File Contents:\n";
 		fm.Read(true, "fillLine2.txt");
